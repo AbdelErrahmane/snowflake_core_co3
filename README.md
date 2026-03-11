@@ -1451,7 +1451,7 @@ Used to:
 - More DML = higher clustering cost.
 - Can suspend/resume reclustering anytime.
 
-*# Temporary and Transient Tables — Certification Summary
+# Temporary and Transient Tables — Certification Summary
 
 ## Temporary Tables
 
