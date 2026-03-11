@@ -2848,639 +2848,322 @@ They allow organizations to:
 * improve AI query accuracy
 
 
+# Authentication Policies — Certification Summary
 
-# """"""""""""""" Authentication Policies """""""
+## Definition  
+An **Authentication Policy** controls **how users and clients authenticate to Snowflake.**  
 
-## 1\. Definition
-
-An **Authentication Policy** controls **how users or clients are allowed to authenticate to Snowflake**.
-
-It can define:
-
-* whether MFA enrollment is required
-* which authentication methods are allowed
-* which authentication methods require MFA
-* which SAML security integrations are allowed
-* which client types are allowed
-* PAT expiration settings
-* PAT network policy requirements
-* minimum client versions
-
-Main idea:
-
-> Authentication policies centralize login rules for users and clients.
+👉 Centralizes login security rules.
 
 ---
 
-# 2\. What Authentication Policies Can Control
+## What Authentication Policies Control (Exam Focus)
 
-Authentication policies can control:
+They can define:
 
-* **MFA enrollment**
-* **MFA enforcement**
-* **Allowed authentication methods**
-* **Allowed SAML2 security integrations**
-* **Allowed client types**
-* **Minimum client versions**
-* **PAT expiration and network requirements**
+- MFA enrollment requirement  
+- MFA enforcement  
+- Allowed authentication methods  
+- Allowed SAML security integrations  
+- Allowed client types  
+- Minimum client versions  
+- Programmatic Access Token (PAT) settings  
 
-Examples of authentication methods:
+👉 Example authentication methods:
+- PASSWORD  
+- SAML  
+- OAUTH  
+- KEY_PAIR  
+- PROGRAMMATIC_ACCESS_TOKEN  
 
-* `SAML`
-* `PASSWORD`
-* `OAUTH`
-* `KEY\\_PAIR`
-* `PROGRAMMATIC\\_ACCESS\\_TOKEN`
-
-Examples of client types:
-
-* `SNOWFLAKE\\_UI`
-* `SNOWFLAKE\\_CLI`
-* `SNOWSQL`
-* `DRIVERS`
+👉 Example client types:
+- SNOWFLAKE_UI  
+- SNOWFLAKE_CLI  
+- SNOWSQL  
+- DRIVERS  
 
 ---
 
-# 3\. Where Authentication Policies Can Be Applied
+## Where Policies Can Be Applied
 
-Authentication policies can be applied at:
+Authentication policies can be set at:
 
-* **account level**
-* **user level**
+- Account level  
+- User level  
+- All SERVICE users  
 
-Rule:
-
-> If both account-level and user-level authentication policies exist, the \*user-level policy overrides the account-level policy\*.
-
-You can also apply a policy to:
-
-* all `SERVICE` users
-* all users of a specific type
+⭐ Exam rule  
+👉 **User-level policy overrides account-level policy.**
 
 ---
 
-# 4\. Main Use Cases
+## Main Use Cases
 
-Authentication policies are useful when you want to:
+Use authentication policies to:
 
-* require MFA for some or all users
-* control which login methods are allowed
-* control login flow when multiple login options exist
-* restrict access by client type
-* enforce minimum client versions
-* control which IdP is available for SAML login
-* allow multiple IdPs for different users
-* prevent users from accessing Snowsight while still allowing drivers
+- Enforce MFA  
+- Restrict login methods  
+- Restrict login client types  
+- Allow specific Identity Providers (IdP)  
+- Enforce minimum client versions  
+- Control login experience  
 
 ---
 
-# 5\. Authentication Methods and Security Integrations
+## Authentication Methods vs Security Integrations
 
-Authentication policies can specify:
+Policies can define:
 
-* allowed authentication methods
-* allowed SAML2 security integrations
+- Allowed authentication methods  
+- Allowed SAML integrations  
+
+⭐ Exam rule  
+👉 Methods and integrations must be **consistent** or policy creation fails.
+
+Example conflict:
+
+- Allow only OAUTH  
+- Specify only SAML integration  
+
+---
+
+## CLIENT_TYPES Limitation (Very Important)
+
+Authentication policies can restrict client access.
 
 Example:
 
-If multiple SAML IdPs exist, you can control which ones users can use.
+- Allow only Snowsight  
 
-Important:
+But:
 
-If authentication methods and security integrations conflict, the policy cannot be created.
-
-Example of a conflict:
-
-* allowing only `OAUTH`
-* but specifying only a SAML2 security integration
-
-Exam point:
-
-> Allowed authentication methods and allowed security integrations must be consistent.
+⭐ Exam rule  
+👉 CLIENT_TYPES is **best-effort only**  
+👉 It does NOT block REST API access  
+👉 It should NOT be used as the only security control.
 
 ---
 
-# 6\. CLIENT\_TYPES Limitation
+## MFA Enforcement
 
-Authentication policies can restrict which client types can be used.
+Policies can require:
 
-Example:
+- MFA enrollment  
+- MFA for password users  
+- MFA for SSO users  
 
-* allow only Snowsight
-* block SnowSQL or drivers
+⭐ Exam rule  
+👉 Snowflake is deprecating single-factor password login.
 
-However:
+Important rule:
 
-> `CLIENT\\_TYPES` is only a \*best-effort\* restriction.
+If:
 
-Important limitation:
-
-* it should **not** be used as the sole security boundary
-* it does **not** restrict access to **Snowflake REST APIs**
-
-Exam point:
-
-> `CLIENT\\_TYPES` is not a complete security boundary.
-
----
-
-# 7\. MFA with Authentication Policies
-
-Authentication policies can require:
-
-* MFA enrollment
-* MFA usage for password users
-* MFA usage for SSO users too
-
-Important note:
-
-Snowflake is deprecating **single-factor password login**.
-
-When rollout is complete:
-
-> all password users must enroll in MFA
-
-Exam point:
-
-> Authentication policies are a main way to enforce MFA in Snowflake.
-
----
-
-# 8\. Important MFA Rule
-
-If you set:
-
-```sql
-MFA\\_ENROLLMENT = 'REQUIRED'
+```
+MFA_ENROLLMENT = REQUIRED
 ```
 
-then:
+Then:
 
-```sql
-CLIENT\\_TYPES
+```
+CLIENT_TYPES must include SNOWFLAKE_UI
 ```
 
-must include:
-
-```sql
-SNOWFLAKE\\_UI
-```
-
-Reason:
-
-> Users can enroll in MFA only through \*Snowsight\*.
+👉 Users enroll MFA only via Snowsight.
 
 ---
 
-# 9\. Security Policy Precedence
-
-If multiple security policies are active, Snowflake evaluates them in order.
+## Security Policy Evaluation Order (Exam Trap)
 
 Order of evaluation:
 
-1. **Network policies**
-2. **Authentication policies**
-3. **Password policies**
-4. **Session policies**
+1. Network policies  
+2. Authentication policies  
+3. Password policies  
+4. Session policies  
 
-Important:
-
-If a request is blocked by a **network policy**, then authentication policy is **not checked**.
-
-Exam point:
-
-> \*Network policies take precedence over authentication policies\*.
+⭐ Exam rule  
+👉 If blocked by network policy → authentication policy not evaluated.
 
 ---
 
-# 10\. Identifier-First Login
+## Identifier-First Login
 
-By default, Snowsight shows a generic login page with multiple login options.
+Login flow:
 
-With **identifier-first login**:
-
-* user enters username or email first
-* Snowflake identifies the user
-* only the allowed login options for that user are shown
-
-This works together with authentication policies.
+- User enters username/email  
+- Snowflake detects user  
+- Shows only allowed login methods  
 
 Benefits:
 
-* cleaner login experience
-* only relevant login methods appear
-* easier control when multiple IdPs exist
+- Cleaner login experience  
+- Easier multi-IdP control  
 
-Exam point:
-
-> Identifier-first login uses the user identity first, then shows only relevant login options allowed by policy.
+⭐ Exam rule  
+👉 Identifier-first login shows only authentication methods allowed by policy.
 
 ---
 
-# 11\. Identifier-First Login Scenarios
-
-## Only PASSWORD allowed
-
-Result:
-
-* Snowflake prompts for username/email and password
-
-## Only SAML allowed + one active SAML integration
-
-Result:
-
-* Snowflake redirects user to the IdP login page
-
-## PASSWORD + SAML allowed + one active SAML integration
-
-Result:
-
-* Snowflake shows:
-
-  * SAML SSO button
-  * username/email + password option
-
-## Only SAML allowed + multiple active SAML integrations
-
-Result:
-
-* Snowflake shows multiple SAML SSO buttons
-
-## PASSWORD + SAML allowed + multiple active SAML integrations
-
-Result:
-
-* Snowflake shows:
-
-  * multiple SAML SSO buttons
-  * username/email + password option
-
----
-
-# 12\. Creating an Authentication Policy
+## Creating an Authentication Policy
 
 Main command:
 
-```sql
-CREATE AUTHENTICATION POLICY my\\_policy
-  CLIENT\\_TYPES = ('SNOWFLAKE\\_UI')
-  AUTHENTICATION\\_METHODS = ('SAML', 'PASSWORD');
+```
+CREATE AUTHENTICATION POLICY my_policy
+  CLIENT_TYPES = ('SNOWFLAKE_UI')
+  AUTHENTICATION_METHODS = ('SAML','PASSWORD');
 ```
 
-By default, if no restrictions are set:
+Default behavior if not specified:
 
-* all client types are allowed
-* all authentication methods are allowed
-* all security integrations are allowed
-
-Exam point:
-
-> `CREATE AUTHENTICATION POLICY` is the main DDL command to define authentication restrictions.
+- All client types allowed  
+- All methods allowed  
+- All integrations allowed  
 
 ---
 
-# 13\. Setting an Authentication Policy
+## Applying an Authentication Policy
 
-Set on account:
+Account level:
 
-```sql
-ALTER ACCOUNT SET AUTHENTICATION POLICY my\\_policy;
+```
+ALTER ACCOUNT SET AUTHENTICATION POLICY my_policy;
 ```
 
-Set on a user:
+User level:
 
-```sql
-ALTER USER example\\_user SET AUTHENTICATION POLICY my\\_policy;
+```
+ALTER USER user1 SET AUTHENTICATION POLICY my_policy;
 ```
 
-Set for all service users:
+Service users:
 
-```sql
-ALTER ACCOUNT SET AUTHENTICATION POLICY my\\_policy
-  FOR ALL SERVICE USERS;
 ```
-
-Exam point:
-
-> Policies can be applied at account level, user level, or for all users of a specific type.
-
----
-
-# 14\. Privileges Required
-
-To work with authentication policies, main privileges are:
-
-|Privilege|Object|Purpose|
-|-|-|-|
-|`CREATE AUTHENTICATION POLICY`|Schema|Create policy|
-|`APPLY AUTHENTICATION POLICY`|Account / User|Apply policy|
-|`OWNERSHIP`|Authentication policy|Full control|
-
-Important:
-To operate on schema objects, you also need privileges on:
-
-* parent database
-* parent schema
-
----
-
-# 15\. Commands to Know
-
-Create policy
-
-```sql
-CREATE AUTHENTICATION POLICY my\\_policy ...;
-```
-
-Alter policy
-
-```sql
-ALTER AUTHENTICATION POLICY my\\_policy ...;
-```
-
-Drop policy
-
-```sql
-DROP AUTHENTICATION POLICY my\\_policy;
-```
-
-Describe policy
-
-```sql
-DESCRIBE AUTHENTICATION POLICY my\\_policy;
-```
-
-Show policies
-
-```sql
-SHOW AUTHENTICATION POLICIES;
-```
-
-Set policy on account
-
-```sql
-ALTER ACCOUNT SET AUTHENTICATION POLICY my\\_policy;
-```
-
-Set policy on user
-
-```sql
-ALTER USER example\\_user SET AUTHENTICATION POLICY my\\_policy;
-```
-
-Grant permission to apply policy
-
-```sql
-GRANT APPLY AUTHENTICATION POLICY ON ACCOUNT TO ROLE my\\_policy\\_admin;
+ALTER ACCOUNT SET AUTHENTICATION POLICY my_policy
+FOR ALL SERVICE USERS;
 ```
 
 ---
 
-# 16\. Hardening Authentication with MFA
+## Required Privileges
 
-Example policy requiring MFA for password users only:
+- CREATE AUTHENTICATION POLICY (schema)
+- APPLY AUTHENTICATION POLICY (account/user)
+- OWNERSHIP (full control)
 
-```sql
-CREATE AUTHENTICATION POLICY require\\_mfa\\_authentication\\_policy
-  MFA\\_ENROLLMENT = 'REQUIRED'
-  MFA\\_POLICY = (
-    ENFORCE\\_MFA\\_ON\\_EXTERNAL\\_AUTHENTICATION = 'NONE'
-  );
-```
+Also need privileges on:
 
-Meaning:
-
-* password users must use MFA
-* SSO users are not forced to use MFA
-
-Example policy requiring MFA for password and SSO users:
-
-```sql
-CREATE AUTHENTICATION POLICY require\\_mfa\\_authentication\\_policy
-  MFA\\_ENROLLMENT = 'REQUIRED'
-  MFA\\_POLICY = (
-    ENFORCE\\_MFA\\_ON\\_EXTERNAL\\_AUTHENTICATION = 'ALL'
-  );
-```
-
-Meaning:
-
-* password users must use MFA
-* SSO users must also use MFA
-
-Apply to all users in account:
-
-```sql
-ALTER ACCOUNT SET AUTHENTICATION POLICY require\\_mfa\\_authentication\\_policy;
-```
-
-Exam point:
-
-> `ENFORCE\\_MFA\\_ON\\_EXTERNAL\\_AUTHENTICATION = 'ALL'` also enforces MFA for external authentication such as SSO.
+- Parent database  
+- Parent schema  
 
 ---
 
-# 17\. Tracking Authentication Policy Usage
+## Key Commands to Know
 
-You can track where a policy is used with:
-
-```sql
-POLICY\\_REFERENCES(...)
+Create:
+```
+CREATE AUTHENTICATION POLICY
 ```
 
-Supported patterns:
-
-```sql
-POLICY\\_REFERENCES( POLICY\\_NAME => '<authentication\\_policy\\_name>' )
+Alter:
+```
+ALTER AUTHENTICATION POLICY
 ```
 
-```sql
-POLICY\\_REFERENCES( REF\\_ENTITY\\_DOMAIN => 'USER', REF\\_ENTITY\\_NAME => '<username>' )
+Drop:
+```
+DROP AUTHENTICATION POLICY
 ```
 
-```sql
-POLICY\\_REFERENCES( REF\\_ENTITY\\_DOMAIN => 'ACCOUNT', REF\\_ENTITY\\_NAME => '<accountname>' )
+Describe:
+```
+DESCRIBE AUTHENTICATION POLICY
 ```
 
-Example:
-
-```sql
-SELECT \\*
-FROM TABLE(
-  my\\_db.INFORMATION\\_SCHEMA.POLICY\\_REFERENCES(
-    POLICY\\_NAME => 'my\\_db.my\\_schema.authentication\\_policy\\_prod\\_1'
-  )
-);
+Show:
 ```
-
-Exam point:
-
-> Use `POLICY\\_REFERENCES` to see which users or accounts are assigned to an authentication policy.
+SHOW AUTHENTICATION POLICIES
+```
 
 ---
 
-# 18\. Preventing Lockout
+## MFA Hardening Example
 
-If account policy is very restrictive, admins can get locked out.
+Require MFA for password users:
 
-Best practice:
-
-> Create a less restrictive recovery policy for administrators.
-
-Example:
-
-```sql
-CREATE AUTHENTICATION POLICY admin\\_authentication\\_policy
-  AUTHENTICATION\\_METHODS = ('SAML', 'PASSWORD')
-  CLIENT\\_TYPES = ('SNOWFLAKE\\_UI', 'SNOWFLAKE\\_CLI', 'SNOWSQL', 'DRIVERS')
-  SECURITY\\_INTEGRATIONS = ('EXAMPLE\\_OKTA\\_INTEGRATION');
+```
+MFA_POLICY =
+(ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = NONE)
 ```
 
-Assign it to an admin:
+Require MFA for password + SSO:
 
-```sql
-ALTER USER <administrator\\_name> SET AUTHENTICATION POLICY admin\\_authentication\\_policy;
 ```
+MFA_POLICY =
+(ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL)
+```
+
+⭐ Exam rule  
+👉 ALL → also enforces MFA for SSO.
+
+---
+
+## Tracking Policy Usage
+
+Use:
+
+```
+POLICY_REFERENCES()
+```
+
+👉 Shows which users or account use the policy.
+
+---
+
+## Preventing Admin Lockout (Best Practice)
+
+Create a less restrictive policy for admins.
 
 Reason:
 
-* user-level policy overrides account-level policy
-* admin can still recover access
+- User-level policy overrides account-level  
+- Admin keeps emergency access  
 
-Exam point:
-
-> Use a less restrictive user-level admin policy to prevent lockout.
+⭐ Exam best practice.
 
 ---
 
-# 19\. Replication
+## Replication
 
-Authentication policies support replication through:
+Authentication policies support:
 
-* failover groups
-* replication groups
+- Replication groups  
+- Failover groups  
 
-Exam point:
-
-> Authentication policies can be replicated.
-
----
-
-# 20\. Example: Restrict Access by Client Type
-
-Create a policy that only allows Snowsight:
-
-```sql
-CREATE AUTHENTICATION POLICY restrict\\_client\\_type\\_policy
-  CLIENT\\_TYPES = ('SNOWFLAKE\\_UI')
-  COMMENT = 'Only allows access through the web interface';
-```
-
-Apply to a user:
-
-```sql
-ALTER USER example\\_user SET AUTHENTICATION POLICY restrict\\_client\\_type\\_policy;
-```
-
-Important reminder:
-
-> This is best-effort only and does not block REST API access.
+⭐ Exam rule  
+👉 Authentication policies are replicable.
 
 ---
 
-# 21\. Example: Multiple Identity Providers
+## Simple Final Memory (Exam Sentence)
 
-Create SAML integration for Okta:
+Authentication Policy = controls:
 
-```sql
-CREATE SECURITY INTEGRATION example\\_okta\\_integration
-  TYPE = SAML2
-  SAML2\\_SSO\\_URL = 'https://okta.example.com';
-```
-
-Create SAML integration for Microsoft Entra ID:
-
-```sql
-CREATE SECURITY INTEGRATION example\\_entra\\_integration
-  TYPE = SAML2
-  SAML2\\_SSO\\_URL = 'https://entra-example\\_acme.com';
-```
-
-Create policy allowing both IdPs:
-
-```sql
-CREATE AUTHENTICATION POLICY multiple\\_idps\\_authentication\\_policy
-  AUTHENTICATION\\_METHODS = ('SAML')
-  SECURITY\\_INTEGRATIONS = ('EXAMPLE\\_OKTA\\_INTEGRATION', 'EXAMPLE\\_ENTRA\\_INTEGRATION');
-```
-
-Apply to account:
-
-```sql
-ALTER ACCOUNT SET AUTHENTICATION POLICY multiple\\_idps\\_authentication\\_policy;
-```
-
-Exam point:
-
-> Authentication policies can control which SAML IdPs are available to users.
-
----
-
-# 22\. Migration Note
-
-If the account already uses identifier-first login, and still depends on the unsupported parameter:
-
-```sql
-SAML\\_IDENTITY\\_PROVIDER
-```
-
-then migration is required using:
-
-```sql
-SYSTEM$MIGRATE\\_SAML\\_IDP\\_REGISTRATION
-```
-
-This is more of an implementation note than a core exam point, but it is useful to recognize.
-
----
-
-# 23\. Considerations and Best Practices
-
-* ensure allowed methods and integrations do not conflict
-* do not rely only on `CLIENT\\_TYPES` for security
-* use user-level admin recovery policy
-* include `SNOWFLAKE\\_UI` when MFA enrollment is required
-* use account-level policy for global rules
-* use user-level policy for exceptions
-* use authentication policies with identifier-first login for better user experience
-
----
-
-# 24\. Simple Summary
-
-Authentication policies control:
-
-* who can authenticate
-* how they authenticate
-* which client they can use
-* which IdP they can use
-* whether MFA is required
-
-They can be applied at:
-
-* account level
-* user level
+- how users login  
+- which client they use  
+- which IdP they use  
+- whether MFA is required  
 
 Key rules:
 
-* user-level policy overrides account-level policy
-* network policy is checked before authentication policy
-* `CLIENT\\_TYPES` is best effort only
-* Snowsight is required for MFA enrollment
-
-
-
-=========================================================================================
+- User policy overrides account policy  
+- Network policy evaluated first  
+- CLIENT_TYPES is not full security  
+- MFA enrollment requires Snowsight
+-
+-
+  =========================================================================================
 
 
 
