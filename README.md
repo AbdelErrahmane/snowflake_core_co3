@@ -11870,4 +11870,144 @@ Information Schema = more current, less history, no dropped objects.
 
 ### ==== 
 
+# Dynamic Tables — Certification Summary
+
+## Definition  
+A **Dynamic Table** is a table that **automatically refreshes based on a defined query and target freshness (target lag).**  
+
+Certification memory:  
+👉 Dynamic Table = **materialized transformation pipeline managed automatically by Snowflake.**
+
+---
+
+## Key Concept (Very Important for Exam)
+
+When creating a dynamic table you define:
+
+- A transformation query  
+- A target freshness (target lag)  
+
+Snowflake automatically:
+
+- Tracks dependencies  
+- Schedules refresh  
+- Updates the table  
+
+👉 No need for manual pipelines or schedulers.
+
+---
+
+## How Dynamic Tables Work
+
+- Snowflake executes the query defined in `CREATE DYNAMIC TABLE`
+- Detects changes in base tables  
+- Applies **incremental refresh when possible**
+- Uses compute resources associated with the dynamic table  
+
+👉 Focus idea  
+Dynamic tables behave like **continuously refreshed materialized transformations.**
+
+---
+
+## Target Lag (Important Exam Concept)
+
+Target lag defines **how fresh the data must be.**  
+
+Example:
+
+- Target lag = 5 minutes  
+→ dynamic table data will be **at most 5 minutes behind base tables**  
+
+Impacts:
+
+- Refresh frequency  
+- Compute cost  
+- Data freshness  
+
+Certification tip  
+👉 Lower lag = fresher data + higher cost.
+
+---
+
+## Refresh Behavior
+
+- Refresh happens automatically  
+- Can also be refreshed manually  
+- Refresh mode defined at creation  
+
+Goal:
+
+- Keep table updated within target lag  
+
+---
+
+## Incremental Processing (Performance Key Point)
+
+Dynamic tables:
+
+- Process only **changed data when possible**
+- Avoid full recomputation  
+- Improve performance and cost efficiency  
+
+Performance depends on:
+
+- Query complexity  
+- Data organization  
+- Pipeline design  
+
+Best practice:
+
+👉 Break large pipelines into **multiple smaller dynamic tables.**
+
+---
+
+## Immutability Constraints
+
+Used to:
+
+- Keep specific rows unchanged  
+- Allow incremental updates on the rest  
+
+Benefit:
+
+- Protect critical historical data  
+- Prevent unwanted refresh modifications  
+
+---
+
+## When to Use Dynamic Tables
+
+Use dynamic tables when:
+
+- You want **automatic transformation pipelines**
+- You want to materialize query results without orchestration tools  
+- You want to chain multiple transformation steps  
+- You want freshness control instead of scheduling control  
+
+Do NOT use when:
+
+- You need very precise scheduling logic  
+- You want full manual pipeline orchestration  
+
+---
+
+## Typical Use Cases (Exam Focus)
+
+### Slowly Changing Dimensions (SCD)
+- Type 1 and Type 2 implementations  
+- Use streams + window functions  
+
+### Precomputed joins and aggregations
+- Improve analytical query performance  
+
+### Batch → Streaming transition
+- Can switch refresh frequency easily using `ALTER DYNAMIC TABLE`
+
+---
+
+## Certification Memory Sentence
+
+Dynamic Table = automatically refreshed transformation table  
+→ freshness controlled by **target lag**, not scheduling.
+
 
