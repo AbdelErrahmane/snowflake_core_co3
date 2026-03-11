@@ -4164,633 +4164,423 @@ Key facts:
 # =======================================================
 
 =======================================================
+# Snowflake Programmatic Access Tokens (PATs) — Certification Summary
 
-# Snowflake Programmatic Access Tokens (PATs)
+## Definition
+A **Programmatic Access Token (PAT)** is a **Snowflake-generated, time-limited credential** used for **programmatic authentication without a password**.
 
-## 1\. Definition
-
-A **Programmatic Access Token (PAT)** is a **time-limited credential** that can be used to authenticate to Snowflake **without using a password**.
-
-You can use a PAT for:
-
-* Snowflake REST APIs
-* Snowflake SQL API
-* Snowflake drivers
-* Snowflake CLI / SnowSQL
-* third-party tools like Tableau and Power BI
-* Snowflake APIs and libraries
-
-Main idea:
-
-> A PAT is a Snowflake-generated credential for programmatic authentication.
+👉 Main idea:  
+PAT = credential for APIs, drivers, CLI tools, and external applications.
 
 ---
 
-# 2\. Who Can Use PATs
+## Who Can Use PATs
+PATs support:
 
-PATs can be generated for:
+- **Human users** → `TYPE = PERSON`
+- **Service users** → `TYPE = SERVICE`
 
-* **human users** → `TYPE=PERSON`
-* **service users** → `TYPE=SERVICE`
-
-Exam point:
-
-> PATs support both PERSON and SERVICE users.
+⭐ Exam point  
+PATs work for both **PERSON** and **SERVICE** users.
 
 ---
 
-# 3\. Main Use Cases
+## Main Use Cases
+PATs can be used in 2 ways:
 
-PATs can be used in two main ways:
+### 1. Password replacement
+Use PAT instead of password in:
 
-## As a password replacement
+- Drivers
+- Snowflake CLI / SnowSQL
+- SDKs / libraries
+- Tableau / Power BI
+- Other third-party tools
 
-Use the PAT in place of the password in:
+### 2. Bearer token
+Use PAT in HTTP requests:
 
-* drivers
-* CLI tools
-* third-party apps
-* SDKs / libraries
+`Authorization: Bearer <token_secret>`
 
-## As a Bearer token
-
-Use the PAT in HTTP headers to authenticate to Snowflake endpoints.
-
-Exam point:
-
-> PATs can be used as a password substitute or as a Bearer token.
+⭐ Exam point  
+PATs can be used as a **password substitute** or as a **Bearer token**.
 
 ---
 
-# 4\. Authentication Policy Requirement
+## Authentication Policy Requirement
+If a user is controlled by an authentication policy that restricts methods, the policy must allow:
 
-If a user is governed by an authentication policy that restricts authentication methods, then:
-
-* the policy must include `PROGRAMMATIC\_ACCESS\_TOKEN`
+`PROGRAMMATIC_ACCESS_TOKEN`
 
 Example:
 
-```sql
-ALTER AUTHENTICATION POLICY my\_auth\_policy
-  SET AUTHENTICATION\_METHODS = ('OAUTH', 'PASSWORD', 'PROGRAMMATIC\_ACCESS\_TOKEN');
-```
+`AUTHENTICATION_METHODS = ('PASSWORD', 'OAUTH', 'PROGRAMMATIC_ACCESS_TOKEN')`
 
-Exam point:
-
-> If authentication methods are restricted, PATs work only if `PROGRAMMATIC\_ACCESS\_TOKEN` is allowed.
+⭐ Exam point  
+If methods are restricted, PATs only work if `PROGRAMMATIC_ACCESS_TOKEN` is allowed.
 
 ---
 
-# 5\. Network Policy Requirement
+## Network Policy Requirement
+PATs are strongly tied to network policies.
 
-By default, PAT usage is tied to **network policy requirements**.
+### Service users
+- Must be subject to a network policy to **generate** and **use** a PAT (by default)
 
-## Service users
+### Human users
+- Can generate a PAT without a network policy
+- But usually must be subject to a network policy to **authenticate** with PAT
 
-For `TYPE=SERVICE` users:
-
-* user must be subject to a **network policy** to generate and use a PAT
-
-## Human users
-
-For `TYPE=PERSON` users:
-
-* can generate a PAT without a network policy
-* but must be subject to a network policy to authenticate with the PAT
-
-Important:
-
-> Users cannot bypass the network policy itself.
-
-Exam point:
-
-> By default, PATs are strongly tied to network policies, especially for service users.
+⭐ Exam point  
+By default, service-user PATs require a network policy.
 
 ---
 
-# 6\. PAT Network Policy Modes
+## PAT Network Policy Modes
+Controlled by authentication policy:
 
-Authentication policies can change PAT network policy behavior using:
+`PAT_POLICY = ( NETWORK_POLICY_EVALUATION = ... )`
 
-```sql
-PAT\_POLICY = ( NETWORK\_POLICY\_EVALUATION = ... )
-```
+### ENFORCED_REQUIRED (default)
+- Network policy required
+- If policy exists, it is enforced
 
-Supported values:
+### ENFORCED_NOT_REQUIRED
+- Network policy not required
+- If policy exists, it is enforced
 
-## `ENFORCED\_REQUIRED` (default)
+### NOT_ENFORCED
+- Network policy not required
+- Even if policy exists, it is not enforced for PAT auth
 
-* user must be subject to a network policy
-* if a network policy exists, it is enforced
-
-## `ENFORCED\_NOT\_REQUIRED`
-
-* user does not need to be subject to a network policy
-* if a network policy exists, it is enforced
-
-## `NOT\_ENFORCED`
-
-* user does not need to be subject to a network policy
-* even if a network policy exists, it is not enforced during PAT authentication
-
-Exam point:
-
-> Default PAT behavior is `ENFORCED\_REQUIRED`.
+⭐ Exam point  
+Default PAT mode = **ENFORCED_REQUIRED**
 
 ---
 
-# 7\. PAT Expiration Defaults
-
+## PAT Expiration Defaults
 By default:
 
-* **default expiration** = **15 days**
-* **maximum expiration** = **365 days**
+- **Default expiry** = **15 days**
+- **Maximum expiry** = **365 days**
 
-Admins can change both values using an authentication policy with `PAT\_POLICY`.
-
-Exam point:
-
-> Default PAT expiration is 15 days and maximum is 365 days.
+⭐ Exam point  
+15 days default, 365 days max.
 
 ---
 
-# 8\. Setting PAT Maximum Expiration
+## Changing PAT Expiry Rules
+Admins can change PAT settings using authentication policy.
 
-Admins can set the maximum allowed PAT lifetime with:
-
-```sql
-PAT\_POLICY = (
-  MAX\_EXPIRY\_IN\_DAYS = 100
-)
-```
+### Max expiration
+`MAX_EXPIRY_IN_DAYS = <value>`
 
 Important:
+If you reduce max expiry, existing PATs that exceed the new max can fail authentication.
 
-* if an existing PAT exceeds the new maximum, authentication with that PAT fails
+### Default expiration
+`DEFAULT_EXPIRY_IN_DAYS = <value>`
 
-Exam point:
-
-> Reducing the PAT maximum expiry can invalidate existing longer-lived tokens.
-
----
-
-# 9\. Setting PAT Default Expiration
-
-Admins can set the default PAT lifetime with:
-
-```sql
-PAT\_POLICY = (
-  DEFAULT\_EXPIRY\_IN\_DAYS = 5
-)
-```
-
-Exam point:
-
-> PAT default expiration can be changed with authentication policy.
+⭐ Exam point  
+Changing max expiry can invalidate existing longer PATs.
 
 ---
 
-# 10\. Role Restriction for Service Users
-
-By default, when generating a PAT for a **service user**:
-
-* you must specify a **role restriction**
+## Role Restriction for Service Users
+By default, PATs for service users require a **role restriction**.
 
 That role is used for:
 
-* privilege evaluation
-* object creation
+- Privilege evaluation
+- Object creation
 
-This restriction can be removed using:
+Can be disabled with:
 
-```sql
-PAT\_POLICY = (
-  REQUIRE\_ROLE\_RESTRICTION\_FOR\_SERVICE\_USERS = FALSE
-)
-```
+`REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = FALSE`
 
 Important:
+If later changed back to TRUE, service-user PATs created without role restriction can stop working.
 
-* changing it back to `TRUE` invalidates service-user PATs created without role restriction
-
-Exam point:
-
-> Service-user PATs normally require a role restriction.
+⭐ Exam point  
+Service-user PATs normally require a role restriction.
 
 ---
 
-# 11\. PAT Privileges
+## PAT Privileges
+### Human users
+No special privilege needed to manage **their own** PATs.
 
-## For human users
+### Other users / service users
+To manage PATs for another user, need:
 
-A human user does **not** need special privileges to manage their **own** PATs.
+- `OWNERSHIP`
+or
+- `MODIFY PROGRAMMATIC AUTHENTICATION METHODS` on that user
 
-## For other users or service users
-
-To manage PATs for another user or a service user, the role must have:
-
-* `OWNERSHIP`
-* or `MODIFY PROGRAMMATIC AUTHENTICATION METHODS` on that user
-
-Example:
-
-```sql
-GRANT MODIFY PROGRAMMATIC AUTHENTICATION METHODS ON USER my\_service\_user
-  TO ROLE my\_service\_owner\_role;
-```
-
-Exam point:
-
-> Managing PATs for another user requires `OWNERSHIP` or `MODIFY PROGRAMMATIC AUTHENTICATION METHODS`.
+⭐ Exam point  
+Managing another user’s PAT requires `OWNERSHIP` or `MODIFY PROGRAMMATIC AUTHENTICATION METHODS`.
 
 ---
 
-# 12\. Generating a PAT
+## PAT Creation
+PATs can be created through:
 
-PATs can be generated in:
-
-* **Snowsight**
-* **SQL**
+- Snowsight
+- SQL
 
 Important details:
 
-* token name uses letters, numbers, underscores
-* token secret is shown **only once**
-* after the dialog closes, you cannot see the secret again
+- Token name can use letters, numbers, underscores
+- Secret is shown **only once**
+- After creation, secret cannot be viewed again
 
-Exam point:
-
-> The PAT secret is visible only at creation time.
+⭐ Exam point  
+PAT secret is visible only one time.
 
 ---
 
-# 13\. Role Scope When Generating a PAT
+## Role Scope When Generating PAT
+PAT can be restricted to:
 
-When generating a PAT, you can restrict it to:
-
-* **one specific role** (recommended)
-* or use broader role behavior depending on the interface
+- One specific role (recommended)
 
 Important:
 
-* for a **service user**, role restriction is normally required
-* if the restricted role is revoked or dropped, the PAT stops working
-* **secondary roles are not used**
+- Service users usually require a role restriction
+- If restricted role is revoked or dropped, PAT stops working
+- **Secondary roles are not used**
 
-Exam point:
-
-> PATs restricted to a role stop working if that role is revoked or dropped.
-
----
-
-# 14\. Using a PAT as a Password
-
-A PAT can be used in place of a password.
-
-Example in Python:
-
-```python
-conn = snowflake.connector.connect(
-    user=USER,
-    password=<programmatic\_access\_token>,
-    account=ACCOUNT,
-    warehouse=WAREHOUSE,
-    database=DATABASE,
-    schema=SCHEMA
-)
-```
-
-This also applies to tools like:
-
-* Tableau
-* Power BI
-
-Exam point:
-
-> PATs can replace passwords in drivers and third-party tools.
+⭐ Exam point  
+If the restricted role is removed, the PAT fails.
 
 ---
 
-# 15\. Using a PAT to Authenticate to Endpoints
+## Using PAT as Password
+PAT can replace password in connectors and tools.
 
-Use the PAT in the HTTP header:
+Example idea:
 
-```http
-Authorization: Bearer <token\_secret>
-```
+- user = normal Snowflake user
+- password = PAT secret
+
+⭐ Exam point  
+PAT can replace password for drivers and BI tools.
+
+---
+
+## Using PAT as Bearer Token
+For HTTP requests:
+
+`Authorization: Bearer <token_secret>`
 
 Optional header:
 
-```http
-X-Snowflake-Authorization-Token-Type: PROGRAMMATIC\_ACCESS\_TOKEN
-```
+`X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN`
 
-Example:
-
-```bash
-curl --location "https://myorganization-myaccount.snowflakecomputing.com/api/v2/databases" \\
-  --header "Authorization: Bearer <token\_secret>"
-```
-
-Exam point:
-
-> PAT endpoint authentication uses `Authorization: Bearer <token\_secret>`.
+⭐ Exam point  
+PAT endpoint authentication uses `Authorization: Bearer <token_secret>`.
 
 ---
 
-# 16\. PAT\_INVALID Error
+## PAT_INVALID
+A request can fail with `PAT_INVALID` when validation fails.
 
-A request can fail with `PAT\_INVALID` if:
+Typical reasons:
 
-* user associated with the PAT is not found
-* validation fails
-* role associated with the PAT is not found
-* user does not match the token
+- user not found
+- role not found
+- token invalid
+- token/user mismatch
 
-You do not need to memorize every cause, just know it indicates token validation/authentication failure.
+⭐ Exam point  
+`PAT_INVALID` = token validation/authentication failure.
 
 ---
 
-# 17\. Managing PATs
+## PAT Management
+PATs can be:
 
-You can:
-
-* list PATs
-* rename PATs
-* rotate PATs
-* revoke PATs
-* re-enable disabled PATs
+- Listed
+- Renamed
+- Rotated
+- Revoked
+- Re-enabled
 
 Important rule:
 
-> You cannot modify, rename, rotate, or revoke a PAT in a session authenticated with a PAT.
+You **cannot** modify, rotate, rename, or revoke a PAT **from a session already authenticated with a PAT**.
 
-Exam point:
-
-> A PAT cannot manage itself in a PAT-authenticated session.
+⭐ Exam point  
+A PAT cannot manage itself from a PAT-authenticated session.
 
 ---
 
-# 18\. Listing PATs
-
-Admins can list PATs for a user.
-
+## Listing PATs
 Important notes:
 
-* expired PATs disappear after **7 days**
-* there is no command to list **all PATs in the account**
-* admins can query the `CREDENTIALS` view for account-wide visibility
+- Expired PATs disappear after **7 days**
+- No command exists to list **all PATs in the account**
+- For account-wide visibility, admins use the **CREDENTIALS** view
 
-Exam point:
-
-> There is no command to list all PATs in the account; use `CREDENTIALS` view.
+⭐ Exam point  
+There is no “list all PATs” command; use `CREDENTIALS` view.
 
 ---
 
-# 19\. Rotating a PAT
-
+## Rotating a PAT
 Rotation:
 
-* returns a **new token secret**
-* keeps the same name
-* extends expiration time
-* expires the old secret
+- Creates a **new secret**
+- Keeps same token name
+- Extends expiration
+- Invalidates old secret
 
 Important:
+Copy new secret immediately.
 
-* copy/download the new secret immediately
-* if desired, old secret can expire immediately
-
-Exam point:
-
-> Rotating a PAT creates a new secret and invalidates the old one.
+⭐ Exam point  
+Rotating a PAT creates a new secret and invalidates the old one.
 
 ---
 
-# 20\. Revoking a PAT
-
+## Revoking a PAT
 Revoking a PAT:
 
-* disables it permanently
-* the secret cannot be recovered afterward
+- Permanently disables it
+- Secret cannot be recovered
 
-Exam point:
-
-> You cannot recover a PAT after revoking it.
-
----
-
-# 21\. Disabled PATs
-
-If login access for a user is disabled, then the user’s PATs are also disabled.
-
-Important:
-
-* if the user is later re-enabled, the PATs remain disabled
-* admin must explicitly re-enable them
-
-Example:
-
-```sql
-ALTER USER example\_user MODIFY PROGRAMMATIC ACCESS TOKEN example\_token SET DISABLED = FALSE;
-```
-
-Exam point:
-
-> Re-enabling a user does not automatically re-enable their disabled PATs.
+⭐ Exam point  
+Revoked PATs cannot be recovered.
 
 ---
 
-# 22\. Decode PAT Secret
+## Disabled PATs
+If login access for a user is disabled:
 
-If you have the token secret and need information about it, use:
+- Their PATs are also disabled
 
-```sql
-SELECT SYSTEM$DECODE\_PAT('abC...Y5Z');
-```
+If user is re-enabled:
 
-This can return info like:
+- PATs stay disabled
+- Admin must re-enable them manually
 
-* state
-* PAT name
-* user name
-
-Exam point:
-
-> `SYSTEM$DECODE\_PAT` helps identify a PAT from its secret.
+⭐ Exam point  
+Re-enabling a user does **not** automatically re-enable PATs.
 
 ---
 
-# 23\. Leaked PATs
+## Decode PAT Secret
+Use:
 
-Snowflake participates in the **GitHub secret scanning partner program**.
+`SYSTEM$DECODE_PAT('<token_secret>')`
 
-If a PAT is leaked in a public GitHub repository:
+Returns info such as:
 
-* Snowflake is notified
-* the PAT is automatically disabled
-* Snowflake notifies the account admin and associated user
+- PAT name
+- user name
+- state
 
-Exam point:
-
-> Publicly leaked PATs on GitHub can be automatically disabled by Snowflake.
-
----
-
-# 24\. Investigating a Leaked PAT
-
-To investigate a leaked PAT:
-
-* identify sessions where the PAT was used
-* inspect queries run in those sessions
-
-Snowflake provides account usage views such as:
-
-* `LOGIN\_HISTORY`
-* `SESSIONS`
-* `QUERY\_HISTORY`
-
-Exam point:
-
-> PAT usage can be audited through account usage views.
+⭐ Exam point  
+`SYSTEM$DECODE_PAT` helps identify a PAT from its secret.
 
 ---
 
-# 25\. Identifying PAT Login Sessions
+## Leaked PATs
+Snowflake participates in GitHub secret scanning.
 
-You can identify PAT-authenticated sessions by joining:
+If a PAT is leaked publicly on GitHub:
 
-* `LOGIN\_HISTORY`
-* `CREDENTIALS`
+- Snowflake may detect it
+- PAT can be automatically disabled
+- Admin and user can be notified
 
-Key columns:
-
-* `first\_authentication\_factor`
-* `first\_authentication\_factor\_id`
-* `credential\_id`
-
-Exam point:
-
-> PAT usage can be tracked through `LOGIN\_HISTORY` and `CREDENTIALS`.
+⭐ Exam point  
+Leaked PATs on public GitHub can be automatically disabled.
 
 ---
 
-# 26\. Best Practices
+## Auditing PAT Usage
+PAT activity can be investigated using Account Usage views such as:
 
-Best practices for PATs:
+- `LOGIN_HISTORY`
+- `SESSIONS`
+- `QUERY_HISTORY`
+- `CREDENTIALS`
 
-* store PATs securely in a secrets manager
-* do not expose PATs in code
-* restrict PATs to a specific role when possible
-* rotate PATs regularly
-* reduce max expiration to encourage shorter token lifetimes
-* use network policies
-* review PAT usage regularly
-
-Exam point:
-
-> PATs should be short-lived, securely stored, role-restricted, and regularly rotated.
+⭐ Exam point  
+PAT sessions can be audited through Account Usage views.
 
 ---
 
-# 27\. Key Limitations
+## Key Limitations
+Important PAT limitations:
 
-Important limitations:
+- Secret shown only once
+- Expiration cannot be changed after creation
+- Role restriction cannot be changed after creation
+- Max **15 PATs per user**
+- Disabled PATs count toward the limit
+- Expired PATs do not count
+- Revoked PATs cannot be recovered
+- PAT cannot be managed in a PAT-authenticated session
 
-* PAT secret is shown **only once**
-* cannot change PAT expiration after creation
-* cannot change/remove role restriction after creation
-* max **15 PATs per user**
-* disabled tokens count toward the limit
-* expired tokens do not count toward the limit
-* cannot recover a revoked PAT
-* cannot modify/manage a PAT in a PAT-authenticated session
-
-Exam point:
-
-> Major PAT limits include secret visible once, max 15 per user, and expiration/role restriction cannot be changed after creation.
+⭐ Exam point  
+Big PAT limits = one-time secret display, max 15 per user, no post-creation change to expiry/role restriction.
 
 ---
 
-# 28\. Very Important Special Notes
+## Best Practices
+- Store PATs in a secrets manager
+- Keep PATs short-lived
+- Restrict PATs to one role when possible
+- Rotate PATs regularly
+- Use network policies
+- Allow PAT auth only where needed
+- Review PAT activity regularly
 
-## Third-party tools
-
-If a third-party application uses PATs, a network policy may need to allow that application’s IP ranges.
-
-## Secondary roles
-
-When PAT is role-restricted:
-
-* **secondary roles are not used**
-
-Exam point:
-
-> Secondary roles are not used for role-restricted PAT authentication.
+⭐ Exam point  
+Best practice = short-lived, securely stored, role-restricted, rotated PATs.
 
 ---
 
-# 29\. Simple Summary
+## Final Memory Sheet — Most Important Facts
 
-A **Programmatic Access Token (PAT)** is a Snowflake-generated, time-limited credential for programmatic access.
-
-Main facts:
-
-* works for both human and service users
-* can replace passwords or be used as a Bearer token
-* usually requires network policy support
-* must be allowed in authentication policy
-* default expiry = 15 days
-* maximum expiry = 365 days
-* service-user PATs usually require role restriction
-* PAT secrets are visible only once
-* PATs can be rotated, revoked, and audited
-
----
-
-# 30\. The 20 Exam Facts to Memorize
-
-1. A PAT is a time-limited Snowflake credential for programmatic authentication
-2. PATs can be used by both `TYPE=PERSON` and `TYPE=SERVICE` users
-3. PATs can replace passwords in drivers and tools
-4. PATs can also be used as Bearer tokens in HTTP requests
-5. PAT authentication may require `PROGRAMMATIC\_ACCESS\_TOKEN` in authentication policy
-6. By default, PATs are tied to network policy requirements
-7. For service users, a network policy is required by default
-8. For human users, PAT generation can happen without network policy, but PAT authentication requires network policy by default
-9. `NETWORK\_POLICY\_EVALUATION` controls how network policy applies to PATs
-10. Default PAT expiration is **15 days**
-11. Maximum PAT expiration is **365 days**
-12. Admins can change PAT default and max expiry using authentication policy
-13. Service-user PATs normally require a role restriction
-14. If a restricted role is revoked or dropped, the PAT stops working
-15. PAT secret is shown only once at creation time
-16. PATs cannot be modified, rotated, or revoked in a PAT-authenticated session
-17. Rotating a PAT creates a new secret and invalidates the old one
-18. Revoked PATs cannot be recovered
-19. Publicly leaked PATs on GitHub can be automatically disabled by Snowflake
-20. Each user can have a maximum of **15 PATs**
+1. PAT = Snowflake-generated time-limited credential
+2. Supports both PERSON and SERVICE users
+3. Can replace password in tools and drivers
+4. Can also be used as Bearer token
+5. Must be allowed in authentication policy if methods are restricted
+6. Default network mode = `ENFORCED_REQUIRED`
+7. Service-user PATs usually require network policy
+8. Default expiry = 15 days
+9. Max expiry = 365 days
+10. Service-user PATs usually require role restriction
+11. Secondary roles are not used with role-restricted PATs
+12. PAT secret is shown only once
+13. Rotating PAT creates new secret and invalidates old one
+14. Revoked PAT cannot be recovered
+15. Re-enabling a user does not re-enable PATs automatically
+16. No command lists all PATs in account
+17. Use `CREDENTIALS` view for broader visibility
+18. Use `SYSTEM$DECODE_PAT` to inspect token info
+19. Public GitHub leak can automatically disable PAT
+20. Max 15 PATs per user
 
 ---
 
-# 31\. Ultra-Short Exam Summary
+## Ultra-Short Exam Summary
+**PATs** are Snowflake-generated credentials for programmatic access.
 
-**Programmatic Access Tokens (PATs)**
-
-* Snowflake-generated credential
-* used for APIs, drivers, CLI, BI tools
-* supports PERSON and SERVICE users
-* can act as password or Bearer token
-* default expiry = 15 days
-* max expiry = 365 days
-* often requires network policy
-* must be allowed in authentication policy
-* service-user PATs usually require a role
-* secret shown once only
-* can rotate/revoke, but not inside a PAT-authenticated session
-
----
-
+- work for PERSON and SERVICE users
+- can act as password or Bearer token
+- usually tied to network policy
+- must be allowed by authentication policy
+- default expiry = 15 days
+- max expiry = 365 days
+- service PATs usually need role restriction
+- secret shown once only
+- can rotate/revoke/audit
+- max 15 per user
 # =========================================================
 
 # Snowflake OAuth
