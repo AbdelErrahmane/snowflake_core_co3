@@ -2457,22 +2457,6 @@ Materialized views:
 
 
 
-**===========================================================================================**
-
-**========================== Overview of semantic views =================================**
-
-**================================================================================**
-
-You can store semantic business concepts directly in the database in a Semantic View, which is a schema-level object. You can define business metrics and model business entities and their relationships. By adding business meaning to physical data, the semantic view enhances data-driven decisions and provides consistent business definitions across enterprise applications.
-
-You can use Semantic Views in Cortex Analyst and query these views in a SELECT statement. You can also share Semantic Views in private listings, in public listings on the Snowflake Marketplace, and in organizational listings.
-
-
-
-To create and manage Semantic Views, you can use SQL commands (such as CREATE SEMANTIC VIEW) or a wizard in Snowsight that guides you through the process of creating a semantic view.
-
-
-
 # Snowflake Semantic Views
 
 ## 1\. Definition
