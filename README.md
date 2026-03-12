@@ -11233,3 +11233,348 @@ Dynamic Table = automatically refreshed transformation table
 → freshness controlled by **target lag**, not scheduling.
 
 
+
+
+====
+# Snowflake Listings — Very Important Certification Summary
+
+## What is a listing?
+A **listing** is how a provider shares a **data product, app, or secure share** with consumers either:
+
+- **privately** with specific consumers
+- **publicly** on **Snowflake Marketplace**
+
+---
+
+## Main listing types
+### Private listing
+Shared only with specific consumer accounts.
+
+### Marketplace listing
+Published publicly on **Snowflake Marketplace** and requires **Snowflake approval** before publishing.
+
+⭐ Exam point  
+**Private listings** are shared with selected consumers only.  
+**Marketplace listings** require **review and approval**.
+
+---
+
+## Product types supported in listings
+A listing can contain:
+
+- **Secure share**
+- **Native App**
+- **Connected App**
+
+⭐ Exam point  
+Common listing product types = **Secure share, Native App, Connected App**.
+
+---
+
+## Access types
+Main access types:
+
+- **Free**
+- **Paid**
+- **Limited trial**
+
+For private listings, you can also have:
+- **Paid off-platform** private listing
+
+⭐ Exam point  
+A listing access type can be **Free, Paid, or Trial**.
+
+---
+
+## Basic prerequisites to create a listing
+Important prerequisites:
+
+- accept the required legal/provider terms
+- review provider policies
+- have a **provider profile** for paid listings or Marketplace listings
+- prepare the data product
+- use a role with required **provider privileges**
+
+⭐ Exam point  
+To create listings, you need the right **provider privileges** and usually a **provider profile**.
+
+---
+
+## Private listing key fact
+To share a private listing, you must know the consumer’s:
+
+- **organization name**
+- **account name / account identifier**
+
+⭐ Exam point  
+A private listing requires the consumer account identifier.
+
+---
+
+## Auto-fulfillment
+If the consumer is in another region, Snowflake can use **auto-fulfillment** to replicate the data product to that remote region.
+
+Important facts:
+
+- needed for sharing across regions/clouds
+- only supported objects can be auto-fulfilled
+- auto-fulfillment can incur additional costs
+- requires a warehouse if needed for replication setup
+
+⭐ Exam point  
+**Auto-fulfillment** replicates listing data to remote consumer regions and can add cost.
+
+---
+
+## US government region rule
+When sharing to accounts in **US government regions**:
+
+- consumer account must enable data sharing/collaboration
+- provider must use **Cross-Cloud Auto-Fulfillment**
+- only supported objects can be referenced
+- regional fulfillment can incur region-specific costs
+
+⭐ Exam point  
+For US government regions, **Cross-Cloud Auto-Fulfillment** is required.
+
+---
+
+## Publishing a private listing
+To publish a private listing:
+
+- create the listing
+- attach the data product
+- choose consumers
+- configure details
+- click **Publish**
+
+Important:
+Private listings are **not shown** on Snowflake Marketplace.
+
+⭐ Exam point  
+Private listings are published directly to selected consumers, not to the Marketplace.
+
+---
+
+## Publishing a Marketplace listing
+Marketplace listing flow:
+
+1. Create draft listing
+2. Configure required fields
+3. Submit for approval
+4. Snowflake reviews it
+5. If approved, publish it
+
+⭐ Exam point  
+A Marketplace listing must be **submitted for approval before publishing**.
+
+---
+
+## Approval requirement
+Every Marketplace listing must go through review.
+
+If denied:
+- update listing based on comments
+- resubmit for approval
+
+⭐ Exam point  
+**Approval is mandatory** for Marketplace listings.
+
+---
+
+## Paid Marketplace listing important note
+Before publishing a **paid** Marketplace listing, Snowflake requires coordination with:
+
+- your Snowflake business development partner
+or
+- Marketplace Operations
+
+⭐ Exam point  
+Paid Marketplace listings need extra coordination before approval.
+
+---
+
+## Who can publish a listing?
+To publish a listing, use:
+
+- **ACCOUNTADMIN**
+or
+- a role with **OWNERSHIP** on the listing
+
+⭐ Exam point  
+Publishing requires **ACCOUNTADMIN** or **OWNERSHIP** on the listing.
+
+---
+
+## Draft behavior
+If you leave before publishing:
+
+- the listing is saved as a **draft**
+
+⭐ Exam point  
+Listings can remain as drafts until published.
+
+---
+
+## Trial options
+Possible trial styles include:
+
+- **Limited usage**
+- **Limited time**
+- **Limited functionality**
+- **Limited functionality and time**
+
+Important:
+Usage-based trial can offer a limited number of free queries.
+
+⭐ Exam point  
+Common trial types = **usage, time, functionality, or combined**.
+
+---
+
+## Direct share conversion
+A direct share can be converted into a listing.
+
+Important facts:
+
+- existing consumers keep access
+- historical usage data before listing publication is not available
+- can use auto-fulfillment for remote consumers if supported
+- cannot convert to **paid listing** if the share already has active consumers
+
+⭐ Exam point  
+A direct share **cannot** be converted to a **paid listing** if it has active consumers.
+
+---
+
+## Secure share behavior
+If you attach database objects:
+
+- Snowflake creates a **secure share**
+
+If you attach an existing secure share:
+
+- that share is used directly
+
+⭐ Exam point  
+Listings often rely on a **secure share** underneath.
+
+---
+
+## After publishing a private listing
+After publishing:
+
+- selected consumers can access it
+- after publishing, you **cannot change the share associated with the private listing**
+
+⭐ Exam point  
+After a private listing is published, the associated share cannot be changed.
+
+---
+
+## Automatic publishing after first Marketplace publication
+After a Marketplace listing is published the first time:
+
+- later approved changes can be **published automatically**
+
+This can be turned off by switching to **manual publishing**.
+
+⭐ Exam point  
+Marketplace listings can use **automatic publishing** after first publication.
+
+---
+
+## Region availability
+When publishing on Marketplace:
+
+- listing becomes visible broadly
+- but consumers can only get/request/buy it in the **regions you selected**
+
+⭐ Exam point  
+Visibility can be broad, but **consumer access depends on selected regions**.
+
+---
+
+## Notebooks in listings
+Providers can attach **one notebook** to a listing.
+
+Important facts:
+
+- notebook is **view-only** for consumers
+- cannot be cloned/downloaded/interacted with by consumers
+- provider must have **OWNERSHIP** on notebook
+- if notebook changes, remove it and reattach it
+
+⭐ Exam point  
+Only **one notebook** can be attached, and it is **view-only** for consumers.
+
+---
+
+## Paid private listing key ideas
+Paid private listings can include:
+
+- **pricing plan**
+- **offer**
+- pricing models such as:
+  - **usage-based**
+  - **flat fee**
+
+Offer choices can include:
+
+- **self-serve**
+- **sales-led**
+
+⭐ Exam point  
+Paid listings use **pricing plans + offers**.
+
+---
+
+## Important limitation
+If you create a **paid listing draft** and want to change the access type later, you may need to:
+
+- delete the current draft
+- create a new one
+
+⭐ Exam point  
+Changing access type from a paid draft is restricted.
+
+---
+
+## Most important exam facts to memorize
+
+1. A listing is used to share a data product, app, or share
+2. Listings can be **private** or **Marketplace**
+3. Marketplace listings require **Snowflake approval**
+4. Private listings require the consumer **account identifier**
+5. Access types include **Free, Paid, Trial**
+6. Listings can contain **Secure share, Native App, Connected App**
+7. Cross-region sharing can require **auto-fulfillment**
+8. Auto-fulfillment can add costs
+9. US government region sharing requires **Cross-Cloud Auto-Fulfillment**
+10. Publishing requires **ACCOUNTADMIN** or **OWNERSHIP**
+11. Private listings are not shown on Marketplace
+12. Direct shares can be converted to listings
+13. A direct share with active consumers cannot be converted to a paid listing
+14. After publishing a private listing, the associated share cannot be changed
+15. Marketplace listings must be submitted for approval before publishing
+16. Paid Marketplace listings require extra coordination with Snowflake
+17. Trial types include usage, time, functionality, or combined
+18. Listings can be saved as drafts
+19. Only one notebook can be attached to a listing
+20. Attached notebooks are view-only for consumers
+
+---
+
+## Ultra-short memory sheet
+**Listings** = share data/apps through **private listing** or **Marketplace listing**.
+
+- private = specified consumers only
+- marketplace = public + approval required
+- access = free / paid / trial
+- needs provider privileges
+- private listing needs consumer account identifier
+- cross-region often uses auto-fulfillment
+- auto-fulfillment adds cost
+- direct share can be converted to listing
+- private published listing cannot change associated share
+- one notebook max, view-only
