@@ -11578,3 +11578,401 @@ Changing access type from a paid draft is restricted.
 - direct share can be converted to listing
 - private published listing cannot change associated share
 - one notebook max, view-only
+
+
+
+====
+
+# Replication and Failover Across Multiple Accounts — Certification Summary
+
+## Definition
+Snowflake replication lets you copy objects from a **source account** to one or more **target accounts** in the same organization.
+
+- Target copies are called **secondary objects**
+- Replication works **across regions** and **across cloud platforms**
+
+👉 Certification idea:  
+Replication = **business continuity across accounts**.
+
+---
+
+## Edition rule (very important)
+### Available to all accounts
+- **Database replication**
+- **Share replication**
+- **Replication groups**
+
+### Business Critical (or higher) required
+- **Failover groups**
+- replication of most **account objects**
+- **failover / failback**
+- security/integration/network-related replication features
+
+👉 Exam memory:
+- **Database + share replication** = available broadly
+- **Failover groups + most account-object replication** = **Business Critical+**
+
+---
+
+## Replication group vs Failover group
+### Replication group
+- replicates objects as a unit
+- target is **read-only**
+
+### Failover group
+- same as replication group **plus failover capability**
+- secondary is initially **read-only**
+- after promotion, target becomes **read-write**
+
+👉 Certification idea:
+- **Replication group = read-only copy**
+- **Failover group = read-only copy that can be promoted**
+
+---
+
+## Point-in-time consistency
+Replication and failover groups provide **point-in-time consistency** for replicated objects in the target account.
+
+👉 Important exam concept: replicated target reflects a **consistent snapshot**.
+
+---
+
+## Region support
+- Replication is supported in all Snowflake regions across **AWS, Azure, GCP**
+- Replication across different **region groups** may require contacting Snowflake Support
+
+---
+
+## Important replicated account-level objects
+These can be replicated, but many require **Business Critical+**:
+
+- Databases
+- Shares
+- Roles
+- Users
+- Warehouses
+- Resource monitors
+- Network policies
+- Listings
+- Integrations
+- External volumes
+- Parameters
+- Profiles
+
+👉 Certification idea: not only databases can be replicated; many **account objects** can too.
+
+---
+
+## Database replication
+Database replication includes:
+
+- schemas
+- permanent tables
+- transient tables
+- views
+- secure views
+- materialized views
+- sequences
+- streams
+- tasks
+- stored procedures
+- UDFs
+- tags
+- policies
+- dynamic tables
+- Snowflake-managed Iceberg tables
+
+### Not supported / important exceptions
+- **temporary tables** are not replicated
+- **external tables** are not replicated
+- **interactive warehouses** are not replicated
+- only **Snowflake-managed Iceberg tables** are supported
+
+👉 Exam memory:
+- **Permanent + transient tables** replicate
+- **Temporary tables** do not
+- **External tables** do not
+
+---
+
+## Share replication
+- Share objects can be replicated
+- **Inbound shares** (shares received from providers) are **not supported**
+
+👉 Exam point: **Inbound shares are not replicated**.
+
+---
+
+## Role replication
+Role replication includes:
+
+- account roles
+- database roles
+- role hierarchies
+- privileges granted to roles
+- roles granted to roles
+- if users and roles are replicated, role grants to users are replicated too
+
+### Important exception
+- **REPLICATE** and **FAILOVER** privileges are **not replicated**
+
+👉 Exam point: **Roles are replicated, but REPLICATE and FAILOVER privileges are not**.
+
+---
+
+## User replication
+Supported user auth methods in target accounts include:
+
+- Password
+- Password + MFA
+- MFA
+- Key-pair auth
+- Programmatic access tokens
+- Federated auth
+- Snowflake OAuth
+- External OAuth
+- SCIM
+
+### Very important MFA rule
+Users enrolled in MFA in source account must **enroll separately** in each target account.
+
+👉 Exam point: **MFA enrollment does not automatically carry over operationally**; users must enroll again in target accounts.
+
+---
+
+## Programmatic access token replication
+- PATs replicate only if **users and roles** are replicated
+
+👉 Exam point: PAT replication depends on **users + roles** replication.
+
+---
+
+## Warehouse replication
+- Warehouses can be replicated
+- Replicated warehouses arrive in **suspended state**
+- Warehouse state from source is **not replicated**
+
+👉 Certification memory: replicated warehouse = **suspended in target**.
+
+---
+
+## Resource monitor replication
+- Resource monitors can be replicated
+- Privileges on resource monitors to roles can also be replicated
+- Non-admin notification users can replicate **if users are included**
+- Account admin notification settings are **not replicated**
+
+👉 Exam point: **resource monitor email settings for account admins are not replicated**.
+
+---
+
+## Integration replication
+Supported integrations include:
+
+- Security integrations
+- API integrations
+- Notification integrations
+- Storage integrations
+- External access integrations
+
+### Important post-replication caveats
+- replicated storage integrations need a **new trust relationship**
+- replicated API integrations may require updating remote service access
+
+👉 Exam point: some integrations replicate, but **post-replication reconfiguration may still be needed**.
+
+---
+
+## External volume replication
+Important for **Snowflake-managed Iceberg tables**.
+
+- Before replicating Snowflake-managed Iceberg tables, configure **external volume replication**
+- Iceberg replication depends on external volume support
+
+👉 Exam point: **Iceberg table replication requires external volume replication**.
+
+---
+
+## Listing replication
+- Listings can be replicated
+- requires **Business Critical+**
+- especially relevant for listings with auto-fulfillment
+
+---
+
+## Parameter replication
+Snowflake supports replication of:
+
+- **account-level parameters**
+- **object parameters** when the object itself is replicated
+
+👉 Exam point: object parameters replicate with replicated objects.
+
+---
+
+## Grants replication (very important)
+To replicate grants on objects to roles:
+
+- **roles must also be replicated**
+- the object must be replicated
+- both grantor and grantee roles must exist in target account
+- grant must come from valid ownership / grant-option chain
+
+👉 Certification idea: object grants do **not** replicate correctly unless **roles are replicated too**.
+
+---
+
+## Grants to shares
+Even if roles are not replicated:
+
+- grants on objects to **shares** can still replicate
+
+👉 Exam point: **share grants are special and can replicate without role replication**.
+
+---
+
+## Future grants
+If roles are replicated, **future grants** at database/schema level are also replicated.
+
+👉 Exam point: future grants can replicate if roles replicate.
+
+---
+
+## Object ownership in target
+If new objects are created in target during refresh:
+
+- if roles are **not** replicated, OWNERSHIP goes to **GLOBALORGADMIN**
+- if roles are replicated, ownership is later aligned to corresponding replicated role
+
+👉 Exam point: without replicated roles, new replicated object ownership goes to **GLOBALORGADMIN**.
+
+---
+
+## Replication schedule
+Best practice:
+- use **REPLICATION_SCHEDULE** for automatic refreshes
+
+Important behavior:
+- initial refresh runs automatically when secondary group is created
+- only **one refresh at a time**
+- if one refresh is still running, next one is delayed
+
+👉 Exam point: Snowflake ensures **only one refresh executes at a time**.
+
+---
+
+## Scheduled refresh privilege note
+Scheduled refreshes run using the role with **OWNERSHIP** on the replication/failover group.
+
+👉 Exam point: scheduled replication uses the **group owner role**.
+
+---
+
+## Suspend scheduled replication before failover
+A secondary failover group cannot be promoted while refresh is executing.
+
+Best practice:
+- suspend scheduled replication
+- fail over
+- resume replication later
+
+👉 Exam point: **refresh must not be running during promotion**.
+
+---
+
+## Replication to lower editions
+Snowflake warns/errors when sensitive Business Critical data might be replicated to lower editions.
+
+Can be overridden with:
+- **IGNORE EDITION CHECK**
+
+👉 Exam point: **IGNORE EDITION CHECK** can override lower-edition restriction in some scenarios.
+
+---
+
+## Important limitations
+### Not supported / can fail
+- databases created from **shares** cannot be replicated
+- refresh fails if primary database has stream with unsupported source object
+- append-only streams are not supported on replicated source objects
+- external tables are not replicated
+- inbound shares are not replicated
+
+👉 Exam point: **databases from shares cannot be replicated**.
+
+---
+
+## Key database object support to remember
+### Replicated
+- Permanent tables
+- Transient tables
+- Views
+- Secure views
+- Materialized views
+- Streams
+- Tasks
+- Procedures
+- UDFs
+- Dynamic tables
+- Tags
+- Masking / row access / auth / password / session policies
+- Snowflake-managed Iceberg tables
+
+### Not replicated
+- Temporary tables
+- External tables
+
+---
+
+## Best quick comparison
+### Replication group
+- replicated objects
+- read-only target
+- no failover
+
+### Failover group
+- replicated objects
+- read-only secondary
+- can be promoted to read-write primary
+
+---
+
+## Most important exam facts to memorize
+
+1. Replication copies objects across accounts in the same organization
+2. Target copies are called **secondary objects**
+3. Replication works across regions and clouds
+4. Database and share replication are available broadly
+5. Failover groups require **Business Critical+**
+6. Replication group = read-only replica
+7. Failover group = replica that can be promoted
+8. Replication provides **point-in-time consistency**
+9. Permanent and transient tables replicate
+10. Temporary tables do **not** replicate
+11. External tables do **not** replicate
+12. Inbound shares do **not** replicate
+13. Roles replicate, but **REPLICATE** and **FAILOVER** privileges do not
+14. PATs replicate only if **users and roles** replicate
+15. Replicated warehouses are created **suspended**
+16. MFA users must enroll separately in each target account
+17. Snowflake-managed Iceberg replication needs **external volume replication**
+18. Grants to roles require role replication
+19. Grants to shares can replicate even without role replication
+20. Only one scheduled refresh can run at a time
+
+---
+
+## Ultra-short memory sheet
+**Replication**
+- source account → target account
+- target object = **secondary**
+- replication group = read-only
+- failover group = promotable read-write
+- database/share replication = common
+- failover/account object replication = **Business Critical+**
+- permanent/transient tables replicate
+- temporary/external tables do not
+- inbound shares do not replicate
+- warehouses replicate as **suspended**
+- roles replicate, but REPLICATE/FAILOVER privileges do not
+- users may replicate, but MFA enrollment must be redone
